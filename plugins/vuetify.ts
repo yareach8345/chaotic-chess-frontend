@@ -5,7 +5,17 @@ import { createVuetify } from 'vuetify'
 
 export default defineNuxtPlugin((app) => {
     const vuetify = createVuetify({
-        // ... your configuration
+        theme: {
+            defaultTheme: 'light',
+            themes: {
+                light: {
+                    dark: false,
+                    colors: {
+                        primary: "#81C784"
+                    }
+                }
+            }
+        }
     })
     app.vueApp.use(vuetify)
 })
