@@ -22,7 +22,9 @@ const toggleShowNavigation = () => {isNavigationOpen.value = !isNavigationOpen.v
 <template>
   <v-app>
     <v-app-bar color="primary">
-      <v-app-bar-nav-icon v-on:click="toggleShowNavigation()" v-if="smAndDown" />
+      <v-expand-x-transition>
+        <v-app-bar-nav-icon v-on:click="toggleShowNavigation()" v-if="smAndDown" />
+      </v-expand-x-transition>
       <v-toolbar-title>Chaotic Chess</v-toolbar-title>
 <!--      app bar에 속한 메뉴. 모바일이 아닌 경우에만 보임-->
       <template v-slot:extension  v-if="!smAndDown">
