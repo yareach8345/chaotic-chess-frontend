@@ -1,5 +1,5 @@
 import type {Square} from "chess.js";
-import type {Cell} from "~/dto/Cell";
+import type {Cell} from "~/model/Cell";
 
 export function pointToSquare(x: number, y: number): Square {
     const row = 8 - y
