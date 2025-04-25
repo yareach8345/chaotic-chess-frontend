@@ -7,6 +7,7 @@ export interface ChessBoardSkin {
     normal: CellColor,
     selected: CellColor,
     movable: CellColor,
+    noMovableColor: CellColor,
 }
 
 export const defaultChessBoardSkin: ChessBoardSkin = {
@@ -21,5 +22,9 @@ export const defaultChessBoardSkin: ChessBoardSkin = {
     movable: {
         blackCellColor: "darkslateblue",
         whiteCellColor: "slateblue",
+    },
+    noMovableColor: {
+        blackCellColor: "crimson",
+        whiteCellColor: "indianred",
     }
 }

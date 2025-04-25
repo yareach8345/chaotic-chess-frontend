@@ -33,6 +33,7 @@ export class ChessBoardRenderer {
 
 
     drawWithCache() {
+        console.log("draw with cache")
         const img = new Image()
         img.src = this.cache!
         this.context!.drawImage(img, 0, 0)
@@ -113,7 +114,12 @@ export class ChessBoardRenderer {
     async select(selectedCell: Cell, movableCells: Cell[] = []) {
         this.drawWithCache()
 
-        this.drawCell(selectedCell, this.chessBoardSkin.selected)
+        if(movableCells.length === 0) {
+            this.drawCell(selectedCell, this.chessBoardSkin.noMovableColor)
+        } else {
+            this.drawCell(selectedCell, this.chessBoardSkin.selected)
+        }
+
         await this.drawPiece(this.pieceMapCache[selectedCell.y][selectedCell.x]!)
 
         movableCells.forEach(({x, y}) => {

@@ -7,27 +7,31 @@ const cellSize = 200
 const boardImageSize = cellSize * 8
 
 const chessStore = useChessStore()
-const { startCell, movableCells } = storeToRefs(chessStore)
+const { pieceSelection, pieceMap } = storeToRefs(chessStore)
 const { clicked } = chessStore
 
 const canvas = ref<HTMLCanvasElement>();
 
 const canvasRect = computed(() => canvas.value?.getBoundingClientRect())
 
-const chessBoardRenderer = new ChessBoardRenderer(
-    canvas,
-    cellSize,
-)
+const chessBoardRenderer = new ChessBoardRenderer( canvas, cellSize )
 
 onMounted(() => {
   chessBoardRenderer.drawFullBoard(chessStore.pieceMap)
 })
 
-watch(startCell, () => {
-  if(startCell.value === undefined) {
-    chessBoardRenderer.drawFullBoard(chessStore.pieceMap)
+const stopWatch = watch(pieceSelection, () => {
+  if(pieceSelection.value === undefined) {
+    chessBoardRenderer.drawWithCache()
   }
-  chessBoardRenderer.select(startCell.value!, movableCells.value!)
+  chessBoardRenderer.select(
+      pieceSelection.value!.selectedCell,
+      pieceSelection.value!.movableCells
+  )
+})
+
+onUnmounted(() => {
+  stopWatch()
 })
 
 const position = reactive<Cell>({ x: 0, y: 0 })
