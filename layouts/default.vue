@@ -9,8 +9,6 @@ interface TabMenu {
 const menus: TabMenu[] = [
   { to: '/', title: 'Game' },
   { to: '/about', title: 'About' },
-  { to: '/setting', title: 'Setting' },
-  { to: '/comment', title: 'Comment' },
 ]
 
 const { smAndDown } = useDisplay()
@@ -43,6 +41,9 @@ const toggleShowNavigation = () => {isNavigationOpen.value = !isNavigationOpen.v
       </v-container>
     </v-main>
   </v-app>
+  <v-footer color="secondary">
+
+  </v-footer>
 </template>
 
 <style scoped>

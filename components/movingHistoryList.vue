@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { moveHistory } = useChessStore()
+const { moveHistory } = storeToRefs(useChessStore())
 </script>
 
 <template>

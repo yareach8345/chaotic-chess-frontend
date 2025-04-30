@@ -7,27 +7,42 @@ const cellSize = 200
 const boardImageSize = cellSize * 8
 
 const chessStore = useChessStore()
-const { pieceSelection, pieceMap } = storeToRefs(chessStore)
+const { pieceSelection, pieces } = storeToRefs(chessStore)
 const { clicked } = chessStore
 
 const canvas = ref<HTMLCanvasElement>();
 
-const canvasRect = computed(() => canvas.value?.getBoundingClientRect())
+let canvasRect: DOMRect | undefined = undefined
 
 const chessBoardRenderer = new ChessBoardRenderer( canvas, cellSize )
 
 onMounted(() => {
-  chessBoardRenderer.drawFullBoard(chessStore.pieceMap)
+  canvasRect = canvas.value?.getBoundingClientRect()
+  window.addEventListener('resize', () => {
+    canvasRect = canvas.value?.getBoundingClientRect()
+  })
 })
 
-const stopWatch = watch(pieceSelection, () => {
-  if(pieceSelection.value === undefined) {
-    chessBoardRenderer.drawWithCache()
+const stopWatch = watch([pieces, pieceSelection], async ([pieces, pieceSelection], [oldPieces, _]) => {
+  if(oldPieces != pieces) {
+    console.log("pieces changed")
   }
-  chessBoardRenderer.select(
-      pieceSelection.value!.selectedCell,
-      pieceSelection.value!.movableCells
-  )
+  if(oldPieces === undefined) {
+    return await chessBoardRenderer.drawFullBoard(pieces!)
+  }
+  if(pieceSelection === undefined) {
+    if(pieces === oldPieces) {
+      await chessBoardRenderer.drawWithCache()
+    } else {
+      await chessBoardRenderer.drawFullBoard(pieces!)
+    }
+  } else {
+    //기물이 선택 됨
+    await chessBoardRenderer.select(
+        pieceSelection.selectedCell,
+        pieceSelection.movableCells
+    )
+  }
 })
 
 onUnmounted(() => {
@@ -37,8 +52,8 @@ onUnmounted(() => {
 const position = reactive<Cell>({ x: 0, y: 0 })
 
 const chessBoardClick = (e: MouseEvent) => {
-  const x = Math.floor(e.offsetX / canvasRect.value?.width! * 8)
-  const y = Math.floor(e.offsetY / canvasRect.value?.height! * 8)
+  const x = Math.floor(e.offsetX / canvasRect?.width! * 8)
+  const y = Math.floor(e.offsetY / canvasRect?.height! * 8)
   position.x = x
   position.y = y
 
@@ -48,6 +63,9 @@ const chessBoardClick = (e: MouseEvent) => {
 
 <template>
   <canvas ref="canvas" class="w-100 border-thin" :width="boardImageSize" :height="boardImageSize" @click="chessBoardClick"/>
+  <div>
+    [{{position.y}}, {{position.x}}]
+  </div>
 </template>
 
 <style scoped>
