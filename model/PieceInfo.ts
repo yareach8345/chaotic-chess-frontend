@@ -1,7 +1,8 @@
-import type {Color, PieceSymbol, Square} from "chess.js";
+import type { PieceSymbol, Square } from "~/utils/chessUtils";
 
 export type PieceInfo = {
     square: Square,
     type: PieceSymbol,
-    color: Color
+    color: PieceColor,
+    movable: Square[]
 }

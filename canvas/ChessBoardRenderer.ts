@@ -1,6 +1,6 @@
 import {type CellColor, type ChessBoardSkin, defaultChessBoardSkin} from "~/canvas/ChessBoardSkin";
 import type {PieceInfo} from "@/model/PieceInfo";
-import {squareToCell} from "@/utils/chessUtil";
+import {squareToCell} from "~/utils/chessUtils";
 import {getImage} from "@/utils/drawUtils";
 import type {Cell} from "@/model/Cell";
 
@@ -13,7 +13,7 @@ export class ChessBoardRenderer {
     private chessBoardSkin: ChessBoardSkin
     private cache: string | null = null
     private context: CanvasRenderingContext2D | null = null
-    private pieceMapCache: (PieceInfo | null)[][] = []
+    private pieceMapCache: Map<Square, PieceInfo> = new Map()
 
     constructor(private canvasElement: Ref<HTMLCanvasElement | undefined>, private cellSize: number) {
         this.chessBoardSkin = defaultChessBoardSkin
@@ -32,10 +32,8 @@ export class ChessBoardRenderer {
     }
 
 
-    drawWithCache() {
-        console.log("draw with cache")
-        const img = new Image()
-        img.src = this.cache!
+    async drawWithCache() {
+        const img = await getImage(this.cache!)
         this.context!.drawImage(img, 0, 0)
     }
 
@@ -98,36 +96,36 @@ export class ChessBoardRenderer {
         await Promise.all(drawPiecesPromise)
     }
 
-    async drawFullBoard(piecesMap: (PieceInfo | null)[][]) {
+    async drawFullBoard(pieces: PieceInfo[]) {
         if(this.context === null) {
             this.initCanvasElement()
         }
         //샐을 그림
         this.drawBoard()
         //피스 그림
-        const pieces = piecesMap.flat().filter(p => p !== null)
         await this.drawPieces(pieces)
-        this.pieceMapCache = piecesMap
+        this.pieceMapCache = new Map(pieces.map(piece => [piece.square, piece]))
         this.cache = this.canvasElement.value!.toDataURL()
     }
 
     async select(selectedCell: Cell, movableCells: Cell[] = []) {
-        this.drawWithCache()
+        await this.drawWithCache()
 
         if(movableCells.length === 0) {
             this.drawCell(selectedCell, this.chessBoardSkin.noMovableColor)
         } else {
             this.drawCell(selectedCell, this.chessBoardSkin.selected)
         }
-
-        await this.drawPiece(this.pieceMapCache[selectedCell.y][selectedCell.x]!)
+        const pieceAtSelectedCell = this.pieceMapCache.get(cellToSquare(selectedCell))!
+        await this.drawPiece(pieceAtSelectedCell)
 
         movableCells.forEach(({x, y}) => {
             this.drawCell({x, y}, this.chessBoardSkin.movable)
-            const piece = this.pieceMapCache[y][x]
-            if(piece !== null) {
+            const piece = this.pieceMapCache.get(cellToSquare({x, y}))
+            if(piece !== undefined) {
                 this.drawPiece(piece)
             }
         })
+        console.log("end rendering")
     }
 }
