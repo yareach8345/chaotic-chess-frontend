@@ -1,11 +1,13 @@
 <script setup lang="ts">
-const { aiMessage } = storeToRefs(useChessStore())
-const showMessage = ref(false)
+const { aiMessage, turn } = storeToRefs(useChessStore())
+const showAIMessage = ref(false)
+const showLoadingMessage = computed(() => turn.value === 'b')
+const showMessages = computed(() => showAIMessage.value || showLoadingMessage.value)
 
 watch(aiMessage, () => {
-  showMessage.value = true
+  showAIMessage.value = true
   setTimeout(() => {
-    showMessage.value = false
+    showAIMessage.value = false
   }, 5000)
 })
 </script>
@@ -14,9 +16,14 @@ watch(aiMessage, () => {
   <div class="d-flex flex-column align-center position-relative pb-10">
     <v-img src="/ChatGPT_logo.svg" width="10%" alt="gpt"/>
     <v-expand-transition>
-      <v-card elevation="0" class="position-absolute bottom-0 pa-sm-1" border="thin" v-if="showMessage" color="info">
-        {{aiMessage}}
-      </v-card>
+      <div class="position-absolute bottom-0" v-if="showMessages">
+          <v-card elevation="0" class="pa-sm-1" border="thin" v-show="showAIMessage" color="success">
+            {{aiMessage}}
+          </v-card>
+          <v-card elevation="0" class="pa-sm-1" border="thin" v-show="showLoadingMessage" color="info">
+            GPU 열일 시키는 중...
+          </v-card>
+      </div>
     </v-expand-transition>
   </div>
 </template>
