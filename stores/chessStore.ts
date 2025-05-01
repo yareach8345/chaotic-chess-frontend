@@ -10,7 +10,7 @@ import {type Move, toUci} from "~/model/Move";
 import type {TurnResultDto} from "~/dto/TurnResultDto";
 
 export const useChessStore = defineStore('chess', () => {
-    let turn: PieceColor = "w"
+    let turn: Ref<PieceColor> = ref("w")
     const moveHistory: string[] = reactive([])
     const userColor: PieceColor = 'w'
     const aiMessage = ref()
@@ -33,7 +33,7 @@ export const useChessStore = defineStore('chess', () => {
     const moving = async (move: Move) => {
         const userUci = toUci(move)
         moveHistory.push(userUci)
-        turn = 'b'
+        turn.value = 'b'
         gameInfo.value!.pieces = gameInfo.value!.pieces.map(p => {
             if(p.square === move.start)
                 p.square = move.end
@@ -52,12 +52,12 @@ export const useChessStore = defineStore('chess', () => {
         gameInfo.value = result.gameInfo
         aiMessage.value = result.aiSaying
         console.log("moved!")
-        turn = 'w'
+        turn.value = 'w'
     }
 
     const clicked = async (cell: Cell) => {
         const square = cellToSquare(cell)
-        if(turn !== userColor) {
+        if(turn.value !== userColor) {
             // Case 1. 내 차래가 아닐 때는 동작하면 안됨
             console.log("Clicked. but Its not my turn")
             return
@@ -95,5 +95,5 @@ export const useChessStore = defineStore('chess', () => {
         console.log(result)
     })
 
-    return { moveHistory, getPieceAtSquare, fen, clicked, pieceSelection, pieces, aiMessage }
+    return { moveHistory, getPieceAtSquare, fen, clicked, pieceSelection, pieces, aiMessage, turn }
 })
