@@ -3,7 +3,7 @@ const { moveHistory } = storeToRefs(useChessStore())
 </script>
 
 <template>
-  <v-card color="teal-lighten-5" class="h-100">
+  <v-card color="teal-lighten-5">
     <v-card-title>이동 이력</v-card-title>
     <v-divider/>
     <v-card-item class="pb-1 font-weight-bold">Game Init</v-card-item>

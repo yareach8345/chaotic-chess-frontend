@@ -5,15 +5,17 @@ import {cellToSquare, type PieceColor, squareToCell} from "~/utils/chessUtils";
 import type {PieceSelect} from "~/model/PieceSelect";
 import type GameInfoDTO from "~/dto/GameInfoDto";
 import type {PieceInfo} from "~/model/PieceInfo";
-import {toCamelCase} from "~/utils/caseTransformUtils";
+import {transformPropertiesToCamelCase} from "~/utils/caseTransformUtils";
 import {type Move, toUci} from "~/model/Move";
 import type {TurnResultDto} from "~/dto/TurnResultDto";
+import type {MoveResult} from "~/types/MoveResult";
 
 export const useChessStore = defineStore('chess', () => {
     let turn: Ref<PieceColor> = ref("w")
     const moveHistory: string[] = reactive([])
     const userColor: PieceColor = 'w'
-    const aiMessage = ref()
+    const aiMessage: Ref<string | undefined> = ref(undefined)
+    const gameStatus: Ref<MoveResult | undefined> = ref(undefined)
 
     const pieceSelection: Ref<PieceSelect | undefined> = ref(undefined)
     const gameInfo = ref<GameInfoDTO>()
@@ -31,14 +33,17 @@ export const useChessStore = defineStore('chess', () => {
     const pieces = computed<PieceInfo[] | undefined>(() => gameInfo.value?.pieces)
 
     const moving = async (move: Move) => {
-        const userUci = toUci(move)
+        const userUci = toUci(move) + (move.piece === "p" && move.end[1] === "8" ? "q" : "")
+        console.log(userUci)
         moveHistory.push(userUci)
         turn.value = 'b'
-        gameInfo.value!.pieces = gameInfo.value!.pieces.map(p => {
-            if(p.square === move.start)
-                p.square = move.end
-            return p
-        })
+        gameInfo.value!.pieces = gameInfo.value!.pieces
+            .filter(p => p.square !== move.end)
+            .map(p => {
+                if(p.square === move.start)
+                    p.square = move.end
+                return p
+            })
         const response = await $fetch("http://localhost:8000/api/v1/game/move", {
             method: "POST",
             credentials: "include",
@@ -46,11 +51,12 @@ export const useChessStore = defineStore('chess', () => {
                 moving: userUci
             }
         })
-        const result = toCamelCase<TurnResultDto>(response)
+        const result = transformPropertiesToCamelCase<TurnResultDto>(response)
+        console.log(result)
         moveHistory.push(result.movesInThisTurn[1])
-        console.log(result.aiSaying)
         gameInfo.value = result.gameInfo
-        aiMessage.value = result.aiSaying
+        aiMessage.value = result.aiSaying ?? undefined
+        gameStatus.value = result.moveResult as MoveResult
         console.log("moved!")
         turn.value = 'w'
     }
@@ -90,10 +96,23 @@ export const useChessStore = defineStore('chess', () => {
             method: method,
             credentials: "include"
         })
-        gameInfo.value = toCamelCase<GameInfoDTO>(result)
+        gameInfo.value = transformPropertiesToCamelCase<GameInfoDTO>(result)
         moveHistory.push(...gameInfo.value?.moves)
+        gameStatus.value = gameInfo.value?.gameStatus as MoveResult
         console.log(result)
     })
 
-    return { moveHistory, getPieceAtSquare, fen, clicked, pieceSelection, pieces, aiMessage, turn }
+    const resetGame = async () => {
+        const result = await $fetch("http://localhost:8000/api/v1/game/", {
+            method: 'POST',
+            credentials: "include"
+        })
+        gameInfo.value = transformPropertiesToCamelCase<GameInfoDTO>(result)
+        moveHistory.splice(0, moveHistory.length)
+        moveHistory.push(...gameInfo.value?.moves)
+        gameStatus.value = gameInfo.value?.gameStatus as MoveResult
+        console.log(`game is restarted ${gameInfo.value}`)
+    }
+
+    return { moveHistory, getPieceAtSquare, gameStatus, fen, resetGame, clicked, pieceSelection, pieces, aiMessage, turn }
 })

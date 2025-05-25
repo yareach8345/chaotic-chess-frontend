@@ -26,6 +26,10 @@ const convertObjectPropertiesSnakeCaseToCamelCase = (
     return convertedObject;
 };
 
-export const toCamelCase = <T>(obj: any) => {
+export const transformPropertiesToCamelCase = <T>(obj: any) => {
     return convertObjectPropertiesSnakeCaseToCamelCase(obj) as T;
+}
+
+export function transformStringToCamelCase(str: string) {
+    return str.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
 }

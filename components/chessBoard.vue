@@ -2,13 +2,14 @@
 import { useChessStore } from "@/stores/chessStore";
 import type { Cell } from "~/model/Cell";
 import {ChessBoardRenderer} from "~/canvas/ChessBoardRenderer";
+import {MoveResult} from "~/types/MoveResult";
 
 const cellSize = 200
 const boardImageSize = cellSize * 8
 
 const chessStore = useChessStore()
-const { pieceSelection, pieces } = storeToRefs(chessStore)
 const { clicked } = chessStore
+const { pieceSelection, pieces, gameStatus } = storeToRefs(chessStore)
 
 const canvas = ref<HTMLCanvasElement>();
 
@@ -59,15 +60,34 @@ const chessBoardClick = (e: MouseEvent) => {
 
   clicked({ x, y })
 }
+
+const openResetConfirm = ref(false)
+const clickedResetButton = () => {
+  openResetConfirm.value = true
+}
 </script>
 
 <template>
-  <canvas ref="canvas" class="w-100 border-thin" :width="boardImageSize" :height="boardImageSize" @click="chessBoardClick"/>
+  <div class="position-relative">
+    <canvas ref="canvas" class="w-100 border-thin" :width="boardImageSize" :height="boardImageSize" @click="chessBoardClick"/>
+    <v-container class="position-absolute w-100 h-100 top-0 left-0" v-if="gameStatus !== undefined && gameStatus !== MoveResult.ONGOING">
+      <v-card class="w-100 h-100 text-center ob">
+        <v-card-title class="text-lg-h4">Game Over</v-card-title>
+        <v-card-item>
+          <end-card-shower :endCardName="gameStatus"/>
+        </v-card-item>
+        <v-btn @click="clickedResetButton">restart</v-btn>
+      </v-card>
+    </v-container>
+  </div>
   <div>
-    [{{position.y}}, {{position.x}}]
+    <rest-confirm v-model="openResetConfirm"/>
+    <v-btn @click="clickedResetButton">reset</v-btn>
   </div>
 </template>
 
 <style scoped>
-
+.ob {
+  background-color: rgba(255, 255, 255, 0.8)
+}
 </style>

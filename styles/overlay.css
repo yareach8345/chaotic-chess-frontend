@@ -1,0 +1,3 @@
+.overlay-background {
+    background-color: rgba(var(--v-theme-background-rgb), 0.6);
+}
