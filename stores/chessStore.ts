@@ -90,16 +90,20 @@ export const useChessStore = defineStore('chess', () => {
     }
 
     onMounted(async () => {
-        const gameIdCookie = useCookie("game_id")
-        const method = gameIdCookie.value ? "GET" : "POST"
+        const checkGameResult = await $fetch<boolean>("http://localhost:8000/api/v1/game/check", {
+            method: 'GET',
+            credentials: "include"
+        })
+        console.log("checkGameResult => ", checkGameResult)
+        const method = checkGameResult ? "GET" : "POST"
         const result = await $fetch("http://localhost:8000/api/v1/game/", {
             method: method,
             credentials: "include"
         })
+        console.log(result)
         gameInfo.value = transformPropertiesToCamelCase<GameInfoDTO>(result)
         moveHistory.push(...gameInfo.value?.moves)
         gameStatus.value = gameInfo.value?.gameStatus as MoveResult
-        console.log(result)
     })
 
     const resetGame = async () => {
